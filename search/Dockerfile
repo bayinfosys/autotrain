@@ -7,3 +7,4 @@ RUN pip install -q \
       -r /tmp/requirements.txt
 
 ADD ./*.py /usr/local/bin/
+ADD ./architects/*.py /usr/local/bin/architects/
