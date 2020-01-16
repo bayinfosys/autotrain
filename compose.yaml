@@ -1,0 +1,45 @@
+version: "3.6"
+services:
+  run-database:
+    image: mongo
+    container_name: "run-storage"
+    environment:
+      - MONGO_INITDB_DATABASE=$MONGODB_DATABASE_NAME
+      - MONGO_INITDB_ROOT_USERNAME=$MONGODB_ROOT_USERNAME
+      - MONGO_INITDB_ROOT_PASSWORD=$MONGODB_ROOT_PASSWORD
+    volumes:
+      - ./mongo-container/mongo-init.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
+      - ./$STORAGE_DIR/mongo-volume:/data/db
+    ports:
+      - 27017:27017
+      - 27019:27019
+
+  database-connection-test:
+    build: mongo-tester
+    container_name: "run-storage-connection-test"
+    depends_on:
+      - run-database
+    environment:
+      - MONGODB_HOSTNAME=run-database
+      - MONGODB_USERNAME=$MONGODB_ROOT_USERNAME
+      - MONGODB_PASSWORD=$MONGODB_ROOT_PASSWORD
+    #volumes:
+    #  - ./mongo-test-connection.py:/usr/local/bin/mongo-test-connection.py
+    command: ["/bin/bash", "-c", "sleep 100", "&&", "python", "mongo-test-connection.py"]
+
+  model-search:
+    build:
+      context: search
+    container_name: "search-process"
+    depends_on:
+      - run-database
+    environment:
+      - MONGO_TRIALS_CONN=mongo://$MONGODB_ROOT_USERNAME:$MONGODB_ROOT_PASSWORD@run-database:27017/$MONGODB_DATABASE_NAME/jobs?authSource=admin
+      - MONGO_WORKER_CONN=mongo://run-database:27017/$MONGODB_DATABASE_NAME/jobs?authSource=admin
+      - CLASSIFIER_DEF=/models/defs/classifiers.yaml
+      - OUTPUT_DIR=/models/
+      - EXPERIMENT_NAME=experiment_001
+    volumes:
+      - ./$STORAGE_DIR/models/:/models/
+      - ./search/defs/:/models/defs/:ro
+    command: ["/bin/bash", "-c", "python /usr/local/bin/model_search.py & sleep 8 && hyperopt-mongo-worker --mongo=$${MONGO_TRIALS_CONN} --no-subprocesses"]
