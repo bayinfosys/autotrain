@@ -2,30 +2,28 @@ version: "3.6"
 services:
   run-database:
     image: mongo
-    container_name: "run-storage"
+    container_name: "run-database"
     environment:
       - MONGO_INITDB_DATABASE=$MONGODB_DATABASE_NAME
       - MONGO_INITDB_ROOT_USERNAME=$MONGODB_ROOT_USERNAME
       - MONGO_INITDB_ROOT_PASSWORD=$MONGODB_ROOT_PASSWORD
     volumes:
       - ./mongo-container/mongo-init.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
-      - ./$STORAGE_DIR/mongo-volume:/data/db
+      - mongo-storage:/data/db
     ports:
       - 27017:27017
       - 27019:27019
 
-  database-connection-test:
-    build: mongo-tester
-    container_name: "run-storage-connection-test"
-    depends_on:
-      - run-database
+  model-config:
+    image: alpine
+    container_name: "model-config-store"
     environment:
-      - MONGODB_HOSTNAME=run-database
-      - MONGODB_USERNAME=$MONGODB_ROOT_USERNAME
-      - MONGODB_PASSWORD=$MONGODB_ROOT_PASSWORD
-    #volumes:
-    #  - ./mongo-test-connection.py:/usr/local/bin/mongo-test-connection.py
-    command: ["/bin/bash", "-c", "sleep 100", "&&", "python", "mongo-test-connection.py"]
+      - SRC_CLASSIFIER_DEF=/model-defs/classifiers.yaml
+      - DST_CLASSIFIER_DEF=/models/defs/classifiers.yaml
+    volumes:
+      - ./search/defs:/model-defs/
+      - model-definitions:/models/defs/
+    command: ["/bin/sh", "-c", "cp $${SRC_CLASSIFIER_DEF} $${DST_CLASSIFIER_DEF} && ls -la /model-defs && ls -la /models/defs/"]
 
   model-search:
     build:
@@ -33,6 +31,7 @@ services:
     container_name: "search-process"
     depends_on:
       - run-database
+      - model-config
     environment:
       - MONGO_TRIALS_CONN=mongo://$MONGODB_ROOT_USERNAME:$MONGODB_ROOT_PASSWORD@run-database:27017/$MONGODB_DATABASE_NAME/jobs?authSource=admin
       - MONGO_WORKER_CONN=mongo://run-database:27017/$MONGODB_DATABASE_NAME/jobs?authSource=admin
@@ -40,6 +39,11 @@ services:
       - OUTPUT_DIR=/models/
       - EXPERIMENT_NAME=experiment_001
     volumes:
-      - ./$STORAGE_DIR/models/:/models/
-      - ./search/defs/:/models/defs/:ro
+      - model-storage:/models/
+      - model-definitions:/models/defs/:ro
     command: ["/bin/bash", "-c", "python /usr/local/bin/model_search.py & sleep 8 && hyperopt-mongo-worker --mongo=$${MONGO_TRIALS_CONN} --no-subprocesses"]
+
+volumes:
+  mongo-storage:
+  model-storage:
+  model-definitions:
