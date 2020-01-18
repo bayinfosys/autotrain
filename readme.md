@@ -23,5 +23,6 @@ tensorboard will be available at __http:://localhost:6006__
   * work-arounds are available:
     * https://devblogs.nvidia.com/gpu-containers-runtime/
 * kubernetes deployment
+  * deploy training onto GPU nodes
 * abstract out models and data environment code
   * this stuff is hardcoded at the moment
