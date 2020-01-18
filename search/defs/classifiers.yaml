@@ -1,5 +1,11 @@
 classifiers:
   lstm-cnn:
+    hosts:
+      training: keras
+      evaluation: keras
+      inference: keras
+    builder:
+      KerasLSTMCNNSentiment
     data-params:
       max-features: 20000
       max-length: 100
@@ -43,6 +49,12 @@ classifiers:
         name: "lstm-cnn-learning-rate"
         choices: [0.01, 0.001, 0.0001, 0.00001, 0.000001]
   lstm:
+    hosts:
+      training: keras
+      evaluation: keras
+      inference: keras
+    builder:
+      KerasLSTMSentiment
     data-params:
       max-features: 20000
       max-length: 100
@@ -86,6 +98,12 @@ classifiers:
         name: "lstm-learning-rate"
         choices: [0.01, 0.001, 0.0001, 0.00001, 0.000001]
   xgboost:
+    hosts:
+      training: xgboost
+      evaluation: xgboost
+      inference: xgboost
+    builder:
+      XGBoost
     data-params:
       max-features: 20000
       max-length: 100

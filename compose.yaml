@@ -40,7 +40,8 @@ services:
     volumes:
       - model-storage:/models/
       - model-definitions:/models/defs/:ro
-    command: ["/bin/bash", "-c", "python /usr/local/bin/model_search.py & sleep 8 && hyperopt-mongo-worker --mongo=$${MONGO_TRIALS_CONN} --no-subprocesses"]
+    working_dir: /app
+    command: ["/bin/bash", "-c", "python model_search.py & sleep 8 && PYTHONPATH=. hyperopt-mongo-worker --mongo=$${MONGO_TRIALS_CONN} --no-subprocesses"]
 
   tensorboard:
     image: tensorflow/tensorflow:latest-py3

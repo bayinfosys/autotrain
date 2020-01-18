@@ -15,17 +15,18 @@ from hyperopt import fmin, tpe, hp, Trials
 from hyperopt.mongoexp import MongoTrials
 from hyperopt import STATUS_OK, STATUS_FAIL
 
-from architects.keras_lstm_sentiment import (train_model as lstm_train_model,
-                                             evaluate_model as lstm_evaluate_model)
-from architects.keras_lstm_cnn_sentiment import (train_model as lstm_cnn_train_model,
-                                                 evaluate_model as lstm_cnn_evaluate_model)
-from architects.xgboost_sentiment import (train_model as xgboost_train_model,
-                                          evaluate_model as xgboost_evaluate_model)
+from models.keras_lstm_sentiment import build_model as lstm_build
+from models.keras_lstm_cnn_sentiment import build_model as lstm_cnn_build
+from models.xgboost_sentiment import (train_model as xgboost_train_model,
+                                      evaluate_model as xgboost_evaluate_model)
 
 from environments import (load_default_imdb_data,
                           get_default_data_environment)
 
 from classifier_defs import parse_classifier_file
+
+from hosts.keras_host import (train_model as keras_train_model,
+                              evaluate_model as keras_evaluate_model)
 
 logger = logging.getLogger(__name__)
 
@@ -76,21 +77,24 @@ def fn(params):
 
   # load the appropriate classifier
   if classifier_type == "lstm-cnn":
-    train_fn = lstm_cnn_train_model
-    eval_fn = lstm_cnn_evaluate_model
+    train_fn = keras_train_model
+    eval_fn = keras_evaluate_model
+    build_fn = lstm_cnn_build
   elif classifier_type == "lstm":
-    train_fn = lstm_train_model
-    eval_fn = lstm_evaluate_model
+    train_fn = keras_train_model
+    eval_fn = keras_evaluate_model
+    build_fn = lstm_build
   elif classifier_type == "xgboost":
-    train_fn = xgboost_train_model
+    train_fn = lambda x,y,z: z(x,y)
     eval_fn = xgboost_evaluate_model
+    build_fn = xgboost_train_model
 
   # fix some errors in the serialisation
   training_env["metrics"] = ["accuracy"]
 
   try:
     training_time = clock()
-    train_fn(training_env, data_env)
+    train_fn(training_env, data_env, build_fn)
     training_time = clock() - training_time
   except Exception as e:
     logger.error("Exception in train_fn")
