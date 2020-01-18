@@ -1,4 +1,4 @@
-#Autotrain
+# Autotrain
 Hyperparameter optimisation in containers.
 
 ## Components
@@ -10,7 +10,7 @@ Hyperparameter optimisation in containers.
 ## Usage
 docker-compose -f compose.yaml up --scale model-search 5
 to run five instances of the model-search process
-tensorboard will be available at __http:://localhost:6006___
+tensorboard will be available at __http:://localhost:6006__
 
 # TODO
 * GPU training
