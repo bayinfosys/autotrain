@@ -8,26 +8,33 @@ from environments import (get_default_training_environment,
                           get_default_data_environment,
                           load_default_imdb_data)
 
-def train_model(training_env, data_env):
-  def build_model(model_env):
+class XGBoost:
+  def __init__(self):
+    pass
+
+  def __call__(self, training_env, data_env):
     from xgboost import XGBClassifier
-    assert "learning-rate" in model_env
+
+    assert "learning_rate" in training_env
     #assert "xgboost-depth" in model_env
     #assert "xgboost-num-trees" in model_env
 
     model = XGBClassifier(
-        max_depth=model_env["max_depth"],
-        learning_rate=model_env["learning_rate"],
-        n_estimators=model_env["n_estimators"],
+        max_depth=training_env["max_depth"],
+        learning_rate=training_env["learning_rate"],
+        n_estimators=training_env["n_estimators"],
         silent=False,
         objective='binary:logistic',
         nthread=-1,
         seed=42,
-        colsample_bytree=model_env["colsample_bytree"],
-        colsample_bylevel=model_env["colsample_bylevel"],
-        subsample=model_env["subsample"],
+        colsample_bytree=training_env["colsample_bytree"],
+        colsample_bylevel=training_env["colsample_bylevel"],
+        subsample=training_env["subsample"],
     )
     return model
+
+
+def train_model(training_env, data_env):
 
   #assert "x-train" in data_env
   #assert "y-train" in data_env

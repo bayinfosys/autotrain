@@ -8,5 +8,8 @@ RUN apt-get update && \
       --no-cache-dir \
       -r /tmp/requirements.txt
 
-ADD ./*.py /usr/local/bin/
-ADD ./architects/*.py /usr/local/bin/architects/
+ADD ./*.py /app/
+ADD ./models/*.py /app/models/
+ADD ./hosts/*.py /app/hosts/
+
+WORKDIR /app

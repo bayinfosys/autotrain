@@ -1,0 +1,1 @@
+from keras_lstm_sentiment import build_model as keras_lstm_sentiment_build_model

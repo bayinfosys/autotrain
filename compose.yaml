@@ -36,11 +36,12 @@ services:
       - MONGO_WORKER_CONN=mongo://run-database:27017/$MONGODB_DATABASE_NAME/jobs?authSource=admin
       - CLASSIFIER_DEF=/models/defs/classifiers.yaml
       - OUTPUT_DIR=/models/
-      - EXPERIMENT_NAME=experiment_001
+      - EXPERIMENT_NAME=${EXPERIMENT_NAME}
     volumes:
       - model-storage:/models/
       - model-definitions:/models/defs/:ro
-    command: ["/bin/bash", "-c", "python /usr/local/bin/model_search.py & sleep 8 && hyperopt-mongo-worker --mongo=$${MONGO_TRIALS_CONN} --no-subprocesses"]
+    working_dir: /app
+    command: ["/bin/bash", "-c", "python model_search.py & sleep 8 && PYTHONPATH=. hyperopt-mongo-worker --mongo=$${MONGO_TRIALS_CONN} --no-subprocesses"]
 
   tensorboard:
     image: tensorflow/tensorflow:latest-py3
