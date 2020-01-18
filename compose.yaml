@@ -28,7 +28,6 @@ services:
   model-search:
     build:
       context: search
-    container_name: "search-process"
     depends_on:
       - run-database
       - model-config
