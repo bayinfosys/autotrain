@@ -21,6 +21,7 @@ def get_default_data_environment():
   import os
   from os.path import basename, join
   from datetime import datetime
+  from socket import gethostname
 
   assert "OUTPUT_DIR" in os.environ
 
@@ -28,9 +29,11 @@ def get_default_data_environment():
     "model-filename": join(os.environ["OUTPUT_DIR"],
                            "%s-%s.h5" % (basename(sys.argv[0]),
                                          datetime.now().strftime("%Y%m%d%H%M%S"))),
-    "log-dir": join(os.environ["OUTPUT_DIR"], "logs",
-                           "%s-%s" % (basename(sys.argv[0]),
-                                      datetime.now().strftime("%Y%m%d%H%M%S"))),
+    "log-dir": join(os.environ["OUTPUT_DIR"],
+                    "logs",
+                    os.getenv("EXPERIMENT_NAME", "experiment"),
+                    gethostname(),
+                    datetime.now().strftime("%Y%m%d%H%M%S")),
   }
 
 def load_default_imdb_data(data_env, max_features, max_length):

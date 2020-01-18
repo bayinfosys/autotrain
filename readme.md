@@ -9,11 +9,12 @@ Hyperparameter optimisation in containers.
 
 ## Usage
     ./make.env > .env
+    echo EXPERIMENT_NAME=exp-004 >> .env
     docker-compose -f compose.yaml up --scale model-search 5
 
-to create mongodb username and password and launch five
-instances of the model-search process.
-tensorboard will be available at __http:://localhost:6006__
+To create mongodb username and password, run an experiment named 'exp-004'
+with five instances of the model-search process.
+Tensorboard will be available at __http:://localhost:6006__
 
 # TODO
 * GPU training
