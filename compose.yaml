@@ -28,7 +28,6 @@ services:
   model-search:
     build:
       context: search
-    container_name: "search-process"
     depends_on:
       - run-database
       - model-config
@@ -43,6 +42,18 @@ services:
       - model-definitions:/models/defs/:ro
     command: ["/bin/bash", "-c", "python /usr/local/bin/model_search.py & sleep 8 && hyperopt-mongo-worker --mongo=$${MONGO_TRIALS_CONN} --no-subprocesses"]
 
+  tensorboard:
+    image: tensorflow/tensorflow:latest-py3
+    container_name: "tensorboard"
+    depends_on:
+      - model-search
+    volumes:
+      - model-storage:/models/
+    environment:
+      - OUTPUT_DIR=/models/
+    ports:
+      - 6006:6006
+    command: ["/bin/bash", "-c", "tensorboard --logdir=$${OUTPUT_DIR}/logs/ --bind_all"]
 volumes:
   mongo-storage:
   model-storage:

@@ -35,7 +35,7 @@ def train_model(training_env, data_env):
     return model
 
   import json
-  from keras.callbacks import EarlyStopping
+  from keras.callbacks import EarlyStopping, TensorBoard
 
   print(json.dumps(training_env, indent=2))
 
@@ -49,7 +49,8 @@ def train_model(training_env, data_env):
             batch_size=training_env["batch-size"],
             epochs=training_env["num-epochs"],
             validation_data=(data_env["x-validation"], data_env["y-validation"]),
-            callbacks=[EarlyStopping(monitor='val_loss', mode='min', verbose=1, patience=5)])
+            callbacks=[EarlyStopping(monitor='val_loss', mode='min', verbose=1, patience=5),
+                       TensorBoard(log_dir=data_env["log-dir"])])
 
   print("saving model to '%s'" % data_env["model-filename"])
   model.save(data_env["model-filename"])

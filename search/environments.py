@@ -27,7 +27,10 @@ def get_default_data_environment():
   return {
     "model-filename": join(os.environ["OUTPUT_DIR"],
                            "%s-%s.h5" % (basename(sys.argv[0]),
-                                         datetime.now().strftime("%Y%m%d%H%M%S")))
+                                         datetime.now().strftime("%Y%m%d%H%M%S"))),
+    "log-dir": join(os.environ["OUTPUT_DIR"], "logs",
+                           "%s-%s" % (basename(sys.argv[0]),
+                                      datetime.now().strftime("%Y%m%d%H%M%S"))),
   }
 
 def load_default_imdb_data(data_env, max_features, max_length):
