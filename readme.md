@@ -8,8 +8,11 @@ Hyperparameter optimisation in containers.
 + __tensorboard__ to monitor the training process
 
 ## Usage
-docker-compose -f compose.yaml up --scale model-search 5
-to run five instances of the model-search process
+    ./make.env > .env
+    docker-compose -f compose.yaml up --scale model-search 5
+
+to create mongodb username and password and launch five
+instances of the model-search process.
 tensorboard will be available at __http:://localhost:6006__
 
 # TODO
