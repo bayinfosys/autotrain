@@ -67,13 +67,8 @@ def fn(params):
     load_default_imdb_data(data_env,
                            max_features=data_env["max-features"],
                            max_length=data_env["max-length"])
-  except FileNotFoundError as es:
-    logger.error("training data not found")
-    return {"status": STATUS_FAIL,
-            "loss": 0.0,
-            "exception": str(e)}
-  except AssertionError as e:
-    logger.error("assert error in load_default_imdb_data exception")
+  except Exception as e:
+    logger.error("Exception in train_fn")
     logger.exception(e)
     return {"status": STATUS_FAIL,
             "loss": 0.0,
@@ -97,14 +92,8 @@ def fn(params):
     training_time = clock()
     train_fn(training_env, data_env)
     training_time = clock() - training_time
-  except ValueError as e:
-    logger.error("ValueError exception in train_fn")
-    logger.exception(e)
-    return {"status": STATUS_FAIL,
-            "loss": 0.0,
-            "exception": str(e)}
-  except AssertionError as e:
-    logger.error("AssertionError in training exception")
+  except Exception as e:
+    logger.error("Exception in train_fn")
     logger.exception(e)
     return {"status": STATUS_FAIL,
             "loss": 0.0,
@@ -116,19 +105,13 @@ def fn(params):
     evaluation_time = clock()
     score, acc = eval_fn(data_env)
     evaluation_time = clock() - evaluation_time
-  except ValueError as e:
-    logger.error("evaluation exception")
-    logger.exception(e)
-    return {"status": STATUS_FAIL,
-            "loss": 0.0,
-            "exception": str(e),
-            "training-time": str(training_time)}
-  except AssertionError as e:
-    logger.error("assert error in evaluation exception")
+  except Exception as e:
+    logger.error("Exception in train_fn")
     logger.exception(e)
     return {"status": STATUS_FAIL,
             "loss": 0.0,
             "exception": str(e)}
+
 
   # return success
   return {"status": STATUS_OK,
