@@ -4,11 +4,7 @@ https://xgboost.readthedocs.io/en/latest/python/python_intro.html
 https://xgboost.readthedocs.io/en/latest/python/python_api.html
 """
 
-from environments import (get_default_training_environment,
-                          get_default_data_environment,
-                          load_default_imdb_data)
-
-class XGBoost:
+class XGBoostSentiment:
   def __init__(self):
     pass
 
@@ -78,17 +74,3 @@ def evaluate_model(data_env):
 
 def infer_with_model(data_env):
   assert False
-
-if __name__ == '__main__':
-  training_env = get_default_training_environment()
-  data_env = get_default_data_environment()
-
-  load_default_imdb_data(data_env,
-                         max_features=training_env["max-features"],
-                         max_length=training_env["max-length"])
-
-  train_model(training_env, data_env)
-
-  score, acc = evaluate_model(data_env)
-  print("test score: %0.8f" % score)
-  print("accuracy: %0.8f" % acc)
