@@ -1,0 +1,44 @@
+classifiers:
+  xgboost:
+    hosts:
+      training: XGBoostHost
+      evaluation: XGBoostHost
+      inference: XGBoostHost
+    builder:
+      XGBoostSentiment
+    data-params:
+      max-features: 20000
+      max-length: 100
+      sequence-length: 128
+    model-params:
+      max_depth:
+        type: choice
+        name: "max_depth"
+        choices: [1,2,4,6,8,12]
+    training-params:
+      learning_rate:
+        type: choice
+        name: "xgboost-learning_rate"
+        choices: [0.01, 0.001, 0.0001, 0.00001, 0.000001]
+      n_estimators:
+        type: choice
+        name: "n_estimators"
+        choices: [1000, 2000, 4000, 8000, 10000, 12000]
+      colsample_bytree:
+        type: uniform
+        name: "colsample_bytree"
+        range: [0.1, 1.0]
+      colsample_bylevel:
+        type: uniform
+        name: "colsample_bylevel"
+        range: [0.1, 1.0]
+      subsample:
+        type: uniform
+        name: "subsample"
+        range: [0.1, 1.0]
+      metrics:
+        - "rmse"
+        - "mae"
+        - "logloss"
+        - "error"
+        - "auc"

@@ -1,0 +1,50 @@
+classifiers:
+  lstm-cnn:
+    hosts:
+      training: KerasHost
+      evaluation: KerasHost
+      inference: KerasHost
+    builder:
+      KerasLSTMCNNSentiment
+    data-params:
+      max-features: 20000
+      max-length: 100
+      sequence-length: 128
+    model-params: []
+    training-params:
+      loss:
+        type: choice
+        name: "lstm-cnn-loss"
+        choices:
+          - binary_crossentropy
+          - mean_absolute_error
+          - mean_squared_error
+          - sparse_categorical_crossentropy
+      optimizer:
+        type: choice
+        name: "lstm-cnn-optimizer"
+        choices:
+          - sgd
+          - rmsprop
+          - adagrad
+          - adadelta
+          - adam
+          - adamax
+          - nadam
+      metrics:
+        - "accuracy"
+        - "mean_absolute_error"
+        - "sparse_categorical_crossentropy"
+        - "sparse_categorical_accuracy"
+      batch-size:
+        type: choice
+        name: "lstm-cnn-batch-size"
+        choices: [1, 4, 8,16,32,64,96,128]
+      num-epochs:
+        type: choice
+        name: "lstm-cnn-num-epochs"
+        choices: [4,8,32,96,128]
+      learning-rate:
+        type: choice
+        name: "lstm-cnn-learning-rate"
+        choices: [0.01, 0.001, 0.0001, 0.00001, 0.000001]
