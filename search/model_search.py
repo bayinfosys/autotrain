@@ -56,7 +56,6 @@ def fn(params):
 
   # get the data params and load the data
   data_env = {"model-filename": join(os.environ["OUTPUT_DIR"],
-                                     "models",
                                      os.getenv("EXPERIMENT_NAME", "experiment"),
                                      "%s.model" % iterhash),
               "log-dir": join(os.environ["OUTPUT_DIR"],
