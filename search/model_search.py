@@ -16,7 +16,7 @@ from hyperopt.mongoexp import MongoTrials
 from hyperopt import STATUS_OK, STATUS_FAIL
 
 from environments import load_default_imdb_data
-from classifier_defs import parse_classifier_file
+from classifier_defs import parse_classifier_pattern
 
 logger = logging.getLogger(__name__)
 
@@ -141,7 +141,7 @@ if __name__ == "__main__":
                       "--definitions",
                       default=os.environ.get("CLASSIFIER_DEF"),
                       type=str,
-                      help="input model definitions filename")
+                      help="input model definitions filename pattern")
   parser.add_argument("-m",
                       "--mongodb-conn",
                       default=os.environ.get("MONGO_TRIALS_CONN"),
@@ -167,8 +167,8 @@ if __name__ == "__main__":
     logger.info("ENV: '%s':'%s'" % (k, v))
 
   # load the classifiers
-  logger.info("loading classifiers...")
-  classifiers = parse_classifier_file(args.definitions.strip())
+  logger.info("loading classifiers from '%s'" % args.definitions.strip())
+  classifiers = parse_classifier_pattern(args.definitions.strip())
 
   # test the search space
   # FIXME: make this optional

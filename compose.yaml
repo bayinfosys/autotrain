@@ -18,8 +18,8 @@ services:
     image: alpine
     container_name: "model-config-store"
     environment:
-      - SRC_CLASSIFIER_DEF=/model-defs/classifiers.yaml
-      - DST_CLASSIFIER_DEF=/models/defs/classifiers.yaml
+      - SRC_CLASSIFIER_DEF=/model-defs/*.yaml
+      - DST_CLASSIFIER_DEF=/models/defs/
     volumes:
       - ./search/defs:/model-defs/
       - model-definitions:/models/defs/
@@ -34,7 +34,7 @@ services:
     environment:
       - MONGO_TRIALS_CONN=mongo://$MONGODB_ROOT_USERNAME:$MONGODB_ROOT_PASSWORD@run-database:27017/$MONGODB_DATABASE_NAME/jobs?authSource=admin
       - MONGO_WORKER_CONN=mongo://run-database:27017/$MONGODB_DATABASE_NAME/jobs?authSource=admin
-      - CLASSIFIER_DEF=/models/defs/classifiers.yaml
+      - CLASSIFIER_DEF=/models/defs/*.yaml
       - OUTPUT_DIR=/models/
       - EXPERIMENT_NAME=${EXPERIMENT_NAME}
     volumes:
