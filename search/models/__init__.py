@@ -1,3 +1,4 @@
 from .keras_lstm_cnn_sentiment import KerasLSTMCNNSentiment
 from .keras_lstm_sentiment import KerasLSTMSentiment
 from .xgboost_sentiment import XGBoostSentiment
+from .simple_sentiment import KerasSimpleSentiment
