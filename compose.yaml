@@ -54,7 +54,7 @@ services:
       - OUTPUT_DIR=/models/
     ports:
       - 6006:6006
-    command: ["/bin/bash", "-c", "tensorboard --logdir=$${OUTPUT_DIR}/logs/ --bind_all"]
+    command: ["/bin/bash", "-c", "tensorboard --logdir=$${OUTPUT_DIR}logs/ --bind_all --reload_multifile=true"]
 volumes:
   mongo-storage:
   model-storage:
