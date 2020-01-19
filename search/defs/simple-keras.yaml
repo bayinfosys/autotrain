@@ -1,0 +1,62 @@
+classifiers:
+  simple:
+    hosts:
+      training: KerasHost
+      evaluation: KerasHost
+      inference: KerasHost
+    builder:
+      KerasSimpleSentiment
+    data-params:
+      max-features: 20000
+      max-length: 100
+      sequence-length: 128
+    model-params:
+      num-layers:
+        type: choice
+        name: "simple-num-layers"
+        choices: [0, 1, 2, 3]
+      hidden-layer-size:
+        type: choice
+        name: "simple-hidden-layer-size"
+        choices: [10, 100, 1000]
+      dropout-rate:
+        type: choice
+        name: "simple-dropout-rate"
+        choices: [0.0, 0.1, 0.2, 0.3, 0.4]
+    training-params:
+      loss:
+        type: choice
+        name: "simple-loss"
+        choices:
+          - "binary_crossentropy"
+          - "mean_absolute_error"
+          - "mean_squared_error"
+          - "sparse_categorical_crossentropy"
+      optimizer:
+        type: choice
+        name: "simple-optimizer"
+        choices:
+          - "sgd"
+          - "rmsprop"
+          - "adagrad"
+          - "adadelta"
+          - "adam"
+          - "adamax"
+          - "nadam"
+      metrics:
+        - "accuracy"
+        - "mean_absolute_error"
+        - "sparse_categorical_crossentropy"
+        - "sparse_categorical_accuracy"
+      batch-size:
+        type: choice
+        name: "simple-batch-size"
+        choices: [1, 4, 8,16,32,64,96,128]
+      num-epochs:
+        type: choice
+        name: "simple-num-epochs"
+        choices: [4,8,32,96,128]
+      learning-rate:
+        type: choice
+        name: "simple-learning-rate"
+        choices: [0.01, 0.001, 0.0001, 0.00001, 0.000001]
