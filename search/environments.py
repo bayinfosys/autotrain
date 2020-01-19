@@ -1,41 +1,5 @@
 import sys
 
-def get_default_training_environment():
-  """variables used for training
-  """
-  return {
-    "loss": "binary_crossentropy",
-    "optimizer": "adam",
-    "metrics": ["accuracy"],
-    "max-features": 20000,
-    "max-length": 100,
-    "sequence-length": 128,
-    "batch-size": 30,
-    "num-epochs": 2,
-    "learning-rate": 1e-4,
-    "xgboost-depth": 8,
-    "xgboost-num-trees": 8
-  }
-
-def get_default_data_environment():
-  import os
-  from os.path import basename, join
-  from datetime import datetime
-  from socket import gethostname
-
-  assert "OUTPUT_DIR" in os.environ
-
-  return {
-    "model-filename": join(os.environ["OUTPUT_DIR"],
-                           "%s-%s.h5" % (basename(sys.argv[0]),
-                                         datetime.now().strftime("%Y%m%d%H%M%S"))),
-    "log-dir": join(os.environ["OUTPUT_DIR"],
-                    "logs",
-                    os.getenv("EXPERIMENT_NAME", "experiment"),
-                    gethostname(),
-                    datetime.now().strftime("%Y%m%d%H%M%S")),
-  }
-
 def load_default_imdb_data(data_env, max_features, max_length):
   """loads the default imdba data from keras and
      updates the data_environment dictionary with the arrays
