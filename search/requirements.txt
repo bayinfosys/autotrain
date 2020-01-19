@@ -6,3 +6,6 @@ keras==2.3.1
 
 sklearn
 xgboost
+tensorboard_logger
+
+pyyaml

@@ -15,18 +15,8 @@ from hyperopt import fmin, tpe, hp, Trials
 from hyperopt.mongoexp import MongoTrials
 from hyperopt import STATUS_OK, STATUS_FAIL
 
-from models.keras_lstm_sentiment import build_model as lstm_build
-from models.keras_lstm_cnn_sentiment import build_model as lstm_cnn_build
-from models.xgboost_sentiment import (train_model as xgboost_train_model,
-                                      evaluate_model as xgboost_evaluate_model)
-
-from environments import (load_default_imdb_data,
-                          get_default_data_environment)
-
+from environments import load_default_imdb_data
 from classifier_defs import parse_classifier_file
-
-from hosts.keras_host import (train_model as keras_train_model,
-                              evaluate_model as keras_evaluate_model)
 
 logger = logging.getLogger(__name__)
 
@@ -34,8 +24,12 @@ def hash_of_dict(D):
   """hashup a dictionary
   """
   from hashlib import md5
-  from json import dumps as dict_to_string
-  return md5(dict_to_string(sorted(D)).encode("utf-8")).digest().hex()
+  from json import dumps
+
+  D_s = dumps(D, sort_keys=True).encode("utf-8")
+  H_s = md5(D_s).hexdigest()
+  return H_s
+
 
 def fn(params):
   """minimised function
@@ -44,9 +38,10 @@ def fn(params):
   from copy import deepcopy
 
   # get an identifier for this rush
-  iterhash = hash_of_dict(params)
+  iterhash = hash_of_dict(deepcopy(params))
 
   logger.info("DATA-KEYS '%s'" % json.dumps(params))
+  logger.info("ITERHASH: '%s'" % iterhash)
 
   # split out the defs
   classifier_type = params["classifier"]["type"]
@@ -57,11 +52,21 @@ def fn(params):
   training_env.update(classifier_def["model-params"])
   training_env.update(classifier_def["training-params"])
   training_env.update(classifier_def["data-params"])
+  training_env.update({"model-type": classifier_type})
 
   # get the data params and load the data
-  data_env = get_default_data_environment()
-  data_env["model-filename"] = join(os.environ["OUTPUT_DIR"], "%s.model" % iterhash)
+  data_env = {"model-filename": join(os.environ["OUTPUT_DIR"],
+                                     os.getenv("EXPERIMENT_NAME", "experiment"),
+                                     "%s.model" % iterhash),
+              "log-dir": join(os.environ["OUTPUT_DIR"],
+                              "logs",
+                              os.getenv("EXPERIMENT_NAME", "experiment"),
+                              classifier_type,
+                              "%s" % iterhash)
+             }
   data_env.update(classifier_def["data-params"])
+  logger.info("saving model to: '%s'" % data_env["model-filename"])
+  logger.info("saving tblog to: '%s'" % data_env["log-dir"])
 
   # load the data here because it doesn't like being pickled
   try:
@@ -75,26 +80,22 @@ def fn(params):
             "loss": 0.0,
             "exception": str(e)}
 
-  # load the appropriate classifier
-  if classifier_type == "lstm-cnn":
-    train_fn = keras_train_model
-    eval_fn = keras_evaluate_model
-    build_fn = lstm_cnn_build
-  elif classifier_type == "lstm":
-    train_fn = keras_train_model
-    eval_fn = keras_evaluate_model
-    build_fn = lstm_build
-  elif classifier_type == "xgboost":
-    train_fn = lambda x,y,z: z(x,y)
-    eval_fn = xgboost_evaluate_model
-    build_fn = xgboost_train_model
+  # model builder and training host
+  assert "builder" in classifier_def
+  assert "hosts" in classifier_def
+  from model_loader import load_model_builder, load_hosts
+  build_class = load_model_builder(classifier_def["builder"])
+  build_fn = build_class()
+  train_host, eval_host, _ = load_hosts(classifier_def["hosts"]["training"],
+                                        classifier_def["hosts"]["evaluation"],
+                                        None)
 
   # fix some errors in the serialisation
   training_env["metrics"] = ["accuracy"]
 
   try:
     training_time = clock()
-    train_fn(training_env, data_env, build_fn)
+    train_host.train_model(training_env, data_env, build_fn)
     training_time = clock() - training_time
   except Exception as e:
     logger.error("Exception in train_fn")
@@ -107,7 +108,7 @@ def fn(params):
   # againsta test set
   try:
     evaluation_time = clock()
-    score, acc = eval_fn(data_env)
+    score, acc = eval_host.evaluate_model(data_env)
     evaluation_time = clock() - evaluation_time
   except Exception as e:
     logger.error("Exception in train_fn")

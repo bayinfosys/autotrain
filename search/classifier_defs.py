@@ -1,4 +1,6 @@
-from hyperopt import hp
+"""
+parse the classifier definitions file
+"""
 import logging
 
 logger = logging.getLogger(__name__)
@@ -9,6 +11,8 @@ def parse_hyperopt_node(n):
      ("choice", "uniform", "lognormal")
      return the new dictionary with the correct callable functions
   """
+  from hyperopt import hp
+
   fns = {"choice": lambda n: hp.choice(n["name"], n["choices"]),
          "uniform": lambda n: hp.uniform(n["name"], *n["range"]),
          "lognormal": lambda n: hp.lognormal(n["name"], *n["range"])
