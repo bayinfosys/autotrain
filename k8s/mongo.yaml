@@ -1,0 +1,137 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: mongo
+  labels:
+    app: mongo
+spec:
+  ports:
+    - name: default-port
+      port: 27017
+      targetPort: 27017
+    - name: shard-server
+      port: 27018
+      targetPort: 27018
+    - name: config-server
+      port: 27019
+      targetPort: 27019
+    - name: status-page
+      port: 28017
+      targetPort: 28017
+  clusterIP: None
+  selector:
+    app: mongo
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: mongo
+spec:
+  selector:
+    matchLabels:
+      app: mongo
+  serviceName: "mongo"
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: mongo
+        env: dev
+    spec:
+      terminationGracePeriodSeconds: 10
+
+      containers:
+        - name: mongo
+          image: mongo
+          env:
+            - name: MONGO_INITDB_DATABASE
+              valueFrom:
+                configMapKeyRef:
+                  name: mongo-configmap
+                  key: mongo-database-name
+            - name: MONGO_INITDB_ROOT_USERNAME
+              valueFrom:
+                configMapKeyRef:
+                  name: mongo-configmap
+                  key: mongo-root-username
+            - name: MONGO_INITDB_ROOT_PASSWORD
+              valueFrom:
+                configMapKeyRef:
+                  name: mongo-configmap
+                  key: mongo-root-password
+          ports:
+            - containerPort: 27017
+            - containerPort: 27019
+          volumeMounts:
+            - name: mongo-persistent-storage
+              mountPath: /data/db
+            - name: config-volume
+              mountPath: ./mongo-container/
+              subPath: mongo-init.js
+      volumes:
+        - name: config-volume
+          configMap:
+            name: mongo-configmap
+
+  volumeClaimTemplates:
+    - metadata:
+        name: mongo-persistent-storage
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: 100Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mongo-tester
+spec:
+  selector:
+    matchLabels:
+      app: mongo-tester
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: mongo-tester
+    spec:
+      containers:
+        - name: autotrain-mongo-tester
+          image: autotrain.mongo.tester
+          imagePullPolicy: Never
+          env:
+            - name: MONGODB_HOSTNAME
+              valueFrom:
+                configMapKeyRef:
+                  name: mongo-configmap
+                  key: mongo-hostname
+            - name: MONGODB_USERNAME
+              valueFrom:
+                configMapKeyRef:
+                  name: mongo-configmap
+                  key: mongo-username
+            - name: MONGODB_PASSWORD
+              valueFrom:
+                configMapKeyRef:
+                  name: mongo-configmap
+                  key: mongo-password
+            - name: WAIT_TIME
+              value: "5"
+          command: ["/bin/bash", "-c"]
+          args: ["while true; do python /usr/local/bin/mongo-test-connection.py; sleep $WAIT_TIME; done"]
+      volumes:
+        - name: config-volume
+          configMap:
+            name: mongo-configmap
+
+
+#version: "3.6"
+#services:
+#  run-database:
+#    image: mongo
+#    container_name: "run-database"
+#    volumes:
+#      - ./mongo-container/mongo-init.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
+#      - mongo-storage:/data/db
