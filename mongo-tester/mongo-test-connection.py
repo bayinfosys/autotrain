@@ -1,11 +1,11 @@
 from pymongo import MongoClient
+from bson.json_util import dumps
 import os
 
-print("connecting to: '%s'" % os.environ["MONGODB_HOSTNAME"])
-print("as user: '%s'" % os.environ["MONGODB_USERNAME"])
+print("'%s':'%s'" % (os.environ["MONGODB_USERNAME"], os.environ["MONGODB_HOSTNAME"]))
 
 c = MongoClient("mongodb://%s" % (os.environ["MONGODB_HOSTNAME"]),
                 username=os.environ["MONGODB_USERNAME"],
                 password=os.environ["MONGODB_PASSWORD"])
 
-c.admin.command("serverStatus")
+print(dumps(c.admin.command("serverStatus")))
