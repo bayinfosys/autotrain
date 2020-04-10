@@ -41,3 +41,10 @@ data:
   model-output-dir: /models/
   experiment-name: search-test-01
   classifier-definitions: /model/defs/*.yaml
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: data-configmap
+data:
+  data-local-prefix: /data
