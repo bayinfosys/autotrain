@@ -57,27 +57,32 @@ if __name__ == "__main__":
       "--input",
       default=os.environ.get("DATA_FILENAMES_CSV", None),
       help="filename of csv holding download filenames",
-      required=True)
+  )
   parser.add_argument(
       "-r",
       "--remote-prefix",
       default=os.environ.get("DATA_REMOTE_PREFIX", None),
       help="URI for the remote system (e.g., https://my-bucket.s3.com)",
-      required=True)
+  )
   parser.add_argument(
       "-l",
       "--local-prefix",
       default=os.environ.get("DATA_LOCAL_PREFIX", None),
       help="prefix for the local system (e.g., /data/my-bucket/)",
-      required=True)
+  )
   parser.add_argument(
       "-b",
       "--bucket-name",
       default=os.environ.get("DATA_BUCKET_NAME", None),
       help="s3 bucket name",
-      required=True)
+  )
 
   args = parser.parse_args()
+
+  assert args.input is not None
+  assert args.remote_prefix is not None
+  assert args.local_prefix is not None
+  assert args.bucket_name is not None
 
   # create the session
   s3_session = boto3.client("s3")
