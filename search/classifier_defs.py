@@ -3,7 +3,7 @@ parse the classifier definitions file
 """
 import logging
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("autotrain.classifier_defs")
 
 def parse_hyperopt_node(n):
   """process a node in a dictionary
@@ -58,47 +58,51 @@ def parse_classifier_pattern(filename_pattern):
   files = glob(filename_pattern)
 
   logger.info("found %i model definitions" % len(files))
+  print("found %i model definitions" % len(files))
   D = {"classifiers": {}}
 
   for file in files:
     logger.info("parsing '%s'" % file)
+    print("parsing '%s'" % file)
 
     try:
       df = parse_classifier_file(file)
     except Exception as e:
       logger.error("could not parse '%s'" % file)
+      print("could not parse '%s'" % file)
       logger.exception(e)
       continue
 
     D["classifiers"].update(df["classifiers"])
 
   logger.info("found classifiers: %s" % ", ".join(D["classifiers"].keys()))
+  print("found classifiers: %s" % ", ".join(D["classifiers"].keys()))
 
   return D
 
 
-if __name__ == "__main__":
-  import sys
-  import json
-
-  ch = logging.StreamHandler(sys.stdout)
-  formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-  ch.setFormatter(formatter)
-  logger.addHandler(ch)
-  logger.setLevel(logging.DEBUG)
-
-  classifiers = parse_classifier_pattern(sys.argv[1])
-
-  def rprintd(d, l=0):
-    for k in d:
-      print("%s%s" % ("  " * l, k))
-      if isinstance(d[k], dict):
-        rprintd(d[k], l+1)
-
-  rprintd(classifiers)
-
-  # produce an example of the search space from the input
-  # providing this doesn't crash, should be ok?
-  import hyperopt.pyll.stochastic
-  search_space = [{"type": k, "parameters": classifiers[k]} for k in classifiers]
-  print(json.dumps(hyperopt.pyll.stochastic.sample(search_space), indent=2))
+#if __name__ == "__main__":
+#  import sys
+#  import json
+#
+#  ch = logging.StreamHandler(sys.stdout)
+#  formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+#  ch.setFormatter(formatter)
+#  logger.addHandler(ch)
+#  logger.setLevel(logging.DEBUG)
+#
+#  classifiers = parse_classifier_pattern(sys.argv[1])
+#
+#  def rprintd(d, l=0):
+#    for k in d:
+#      print("%s%s" % ("  " * l, k))
+#      if isinstance(d[k], dict):
+#        rprintd(d[k], l+1)
+#
+#  rprintd(classifiers)
+#
+#  # produce an example of the search space from the input
+#  # providing this doesn't crash, should be ok?
+#  import hyperopt.pyll.stochastic
+#  search_space = [{"type": k, "parameters": classifiers[k]} for k in classifiers]
+#  print(json.dumps(hyperopt.pyll.stochastic.sample(search_space), indent=2))
