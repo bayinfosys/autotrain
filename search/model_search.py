@@ -10,15 +10,19 @@ import json
 import os
 from os.path import join
 import pickle
+import sys
+
+#logging.root.setLevel(logging.DEBUG)
+logger = logging.getLogger("autotrain.model_search")
+logger.setLevel(logging.DEBUG)
 
 from hyperopt import fmin, tpe, hp, Trials
 from hyperopt.mongoexp import MongoTrials
 from hyperopt import STATUS_OK, STATUS_FAIL
 
 from environments import load_default_imdb_data
-from classifier_defs import parse_classifier_pattern
+import classifier_defs # import parse_classifier_pattern
 
-logger = logging.getLogger(__name__)
 
 def hash_of_dict(D):
   """hashup a dictionary
@@ -167,27 +171,42 @@ if __name__ == "__main__":
     logger.info("ENV: '%s':'%s'" % (k, v))
 
   # load the classifiers
-  logger.info("loading classifiers from '%s'" % args.definitions.strip())
-  classifiers = parse_classifier_pattern(args.definitions.strip())
+  if args.definitions is not None:
+    logger.info("loading classifiers from '%s'" % args.definitions.strip())
+    classifiers = classifier_defs.parse_classifier_pattern(args.definitions.strip())
+    logger.info("loaded %i classifiers" % len(classifiers))
+    print(json.dumps(classifiers, indent=2))
+  else:
+    logger.error("classifiers not found in CLASSIFIER_DEF or --definitions argument")
+    sys.exit()
 
   # test the search space
   # FIXME: make this optional
   import hyperopt.pyll.stochastic
-  search_space = [{"type": k, "parameters": classifiers["classifiers"][k]}
-                  for k in classifiers["classifiers"]]
-  print(json.dumps(hyperopt.pyll.stochastic.sample(search_space), indent=2))
+
+  search_space = []
+
+  for k in classifiers["classifiers"]:
+    logger.info("constructing search space for '%s'" % k)
+    search_space.append({"type": k, "parameters": classifiers["classifiers"][k]})
+    logger.info(json.dumps(hyperopt.pyll.stochastic.sample(search_space[-1]), indent=2))
+
+  assert len(search_space) > 0, "search_space is empty"
 
   # stuff
   if args.mongodb_conn is not None:
     logger.info("connecting to '%s'" % args.mongodb_conn)
-    # os.environ["MONGODB"] should look like: 'mongo://localhost:1234/foo_db/jobs'
+    # os.environ["MONGO_TRIALS_CONN"] should look like: 'mongo://localhost:1234/foo_db/jobs'
     # http://hyperopt.github.io/hyperopt/scaleout/mongodb/#use-mongotrials
     trials = MongoTrials(args.mongodb_conn,
                          exp_key=args.experiment_name)
     # script entry point is now:
     # > hyperopt-mongo-working --mongo=localhost:1234/foo_db --poll-interval=0.1
   else:
+    logger.info("creating local trials")
     trials = Trials()
+
+  print(json.dumps(search_space, indent=2))
 
   logger.info("experiment-name: '%s'" % args.experiment_name)
 
@@ -204,7 +223,10 @@ if __name__ == "__main__":
 
   # write out the trials if we are not using mongo
   if isinstance(trials, Trials):
-    with open(join(args.output_dir, "%s.pkl" % args.experiment_name), "wb") as trials_f:
+    out_filename = join(args.output_dir, "%s.pkl" % args.experiment_name)
+    logger.info("saving trials to '%s'" % out_filename)
+
+    with open(out_filename, "wb") as trials_f:
       pickle.dump(trials, trials_f, -1)
 
   # print some output, not sure this is needed

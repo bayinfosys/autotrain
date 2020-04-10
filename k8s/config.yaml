@@ -11,6 +11,8 @@ data:
   mongo-hostname: mongo
   mongo-username: root
   mongo-password: root
+  mongo-connection-string:
+    mongodb://mongo:27017
 
   startup-script: |+
     db.createUser(
@@ -25,3 +27,17 @@ data:
         ]
       }
     );
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: search-configmap
+data:
+  mongo-username: root
+  mongo-password: root
+  mongo-database-name: search-db
+  mongo-connection-string: mongo://root:root@mongo:27017/search-db/jobs?authSource=admin
+  mongo-worker-connection: mongo://mongo:27017/search-db/jobs?authSource=admin
+  model-output-dir: /models/
+  experiment-name: search-test-01
+  classifier-definitions: /model/defs/*.yaml

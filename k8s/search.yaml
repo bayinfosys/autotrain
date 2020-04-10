@@ -1,0 +1,55 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: search
+spec:
+  selector:
+    matchLabels:
+      app: search
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: search
+        env: dev
+    spec:
+      terminationGracePeriodSeconds: 10
+
+      containers:
+        - name: search
+          image: autotrain.search
+          imagePullPolicy: Never
+          env:
+            - name: MONGO_TRIALS_CONN
+              valueFrom:
+                configMapKeyRef:
+                  name: search-configmap
+                  key: mongo-connection-string
+            - name: OUTPUT_DIR
+              valueFrom:
+                configMapKeyRef:
+                  name: search-configmap
+                  key: model-output-dir
+            - name: CLASSIFIER_DEF
+              value: /defs/*.yaml
+            - name: EXPERIMENT_NAME
+              value: your-fat-fucking-mother
+
+          workingDir: /app
+          command: ["/bin/bash"]
+          args: ["-c", "python model_search.py & sleep 8 && PYTHONPATH=. hyperopt-mongo-worker --mongo=$${MONGO_TRIALS_CONN} --no-subprocesses"]
+
+          volumeMounts:
+            - name: model-output-volume
+              mountPath: /models
+            - name: model-definitions-volume
+              mountPath: /defs/
+
+      volumes:
+        - name: model-definitions-volume
+          configMap:
+            name: model-definitions
+        - name: model-output-volume
+          persistentVolumeClaim:
+            claimName: search-persistent-storage
+
