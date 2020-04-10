@@ -7,4 +7,4 @@ COPY fetch-from-csv.py /usr/bin/fetch-from-csv.py
 
 WORKDIR /data
 
-CMD ["python", "/usr/bin/fetch-from-csv.py", "-h"]
+CMD ["python", "/usr/bin/fetch-from-csv.py"]
