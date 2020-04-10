@@ -51,7 +51,7 @@ if __name__ == "__main__":
   root.addHandler(ch)
 
   parser = argparse.ArgumentParser(
-      description="generate volumes from csv list")
+      description="download objects named in a csv file from s3")
   parser.add_argument(
       "-i",
       "--input",
