@@ -7,7 +7,7 @@ Hyperparameter optimisation in containers
 + __mongodb__ to hold the hyperopt parameters
 + __tensorboard__ to monitor the training process
 
-## Usage
+## Usage - docker-compose
     ./make.env > .env
     echo EXPERIMENT_NAME=exp-004 >> .env
     docker-compose -f compose.yaml up --scale model-search 5
@@ -15,6 +15,31 @@ Hyperparameter optimisation in containers
 To create mongodb username and password, run an experiment named 'exp-004'
 with five instances of the model-search process.
 Tensorboard will be available at __http:://localhost:6006__
+
+## Usage - minikube
+
+    minikube start
+    eval $(minikube -p minikube docker-env)
+
+    docker build -t autotrain.mongo.tester \
+                 -f mongo-tester/Dockerfile \
+                 ./mongo-tester/
+
+    docker build -t autotrain.search \
+                 -f search/Dockerfile \
+                 ./search
+
+    kubectl create configmap --from-file ./search/defs/
+
+    kubectl apply -f k8s/config.yaml \
+                  -f k8s/mongo.yaml \
+                  -f k8s/search-pvc.yaml \
+                  -f k8s/search.yaml
+
+monitor stuff with:
+
+    kubectl get nodes,pods,pvc,deployments
+                  
 
 ## TODO
 * GPU training
