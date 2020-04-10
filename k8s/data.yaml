@@ -1,0 +1,89 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: data
+spec:
+  selector:
+    matchLabels:
+      name: data
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        name: data
+    spec:
+      initContainers:
+        - name: fetch
+          image: autotrain.data.fetch-s3
+          imagePullPolicy: Never
+          env:
+            - name: AWS_ACCESS_KEY_ID
+              valueFrom:
+                secretKeyRef:
+                  name: aws-secrets
+                  key: aws-access-key-id
+            - name: AWS_SECRET_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: aws-secrets
+                  key: aws-secret-access-key
+            - name: AWS_REGION
+              valueFrom:
+                secretKeyRef:
+                  name: aws-secrets
+                  key: aws-region
+            - name: DATA_FILENAMES_CSV
+              valueFrom:
+                secretKeyRef:
+                  name: aws-secrets
+                  key: aws-objectnames-csv
+            - name: DATA_REMOTE_PREFIX
+              valueFrom:
+                secretKeyRef:
+                  name: aws-secrets
+                  key: aws-prefix
+            - name: DATA_LOCAL_PREFIX
+              valueFrom:
+                configMapKeyRef:
+                  name: data-configmap
+                  key: data-local-prefix
+            - name: DATA_BUCKET_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: aws-secrets
+                  key: aws-bucket-name
+          volumeMounts:
+            - name: data-volume
+              mountPath: /data
+              readOnly: false
+            - name: csv-filenames-volume
+              mountPath: /spec
+
+      containers:
+        - name: serve
+          image: autotrain.data.server
+          imagePullPolicy: Never
+          env:
+            - name: DATA_PATH
+              valueFrom:
+                configMapKeyRef:
+                  name: data-configmap
+                  key: data-directory
+          ports:
+            - containerPort: 80
+
+          volumeMounts:
+            - name: data-volume
+              mountPath: /data
+              readOnly: true
+
+      volumes:
+        - name: data-configmap
+          configMap:
+            name: data-configmap
+        - name: csv-filenames-volume
+          configMap:
+            name: csv-filenames-configmap
+        - name: data-volume
+          persistentVolumeClaim:
+            claimName: data-persistent-storage

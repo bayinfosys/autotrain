@@ -1,16 +1,16 @@
 # Flask Video Server
 
-Streams videos from a directory on the host.
+Streams data from a directory on the host.
 
 Set:
- + `VIDEO_PATH` environment variable to the target directory
- + `VIDEO_TITLE` environment variable to the title of the HTML page
+ + `DATA_PATH` environment variable to the target directory
+ + `DATA_TITLE` environment variable to the title of the HTML page
 
 ## Usage
 
 Example:
 
-    VIDEO_PATH=/home/root/downloads python app.py
+    DATA_PATH=/home/root/downloads python app.py
 
 point your browser at http://127.0.0.1:8080
 
@@ -20,7 +20,7 @@ watch your videos
 
 ## Docker Usage
 
-Mount your video folder to the `/data` in the container.
+Mount your video directory to the `/data` in the container.
 
 Example:
 
@@ -33,3 +33,5 @@ point your browser at http://127.0.0.1
 click some links
 
 watch your videos
+
+## Kubernetes Usage

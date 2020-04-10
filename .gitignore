@@ -1,2 +1,4 @@
 cstore/
 .env
+
+k8s/secrets
