@@ -1,0 +1,3 @@
+# requirements for the fetch_* download scripts
+boto3
+tqdm
