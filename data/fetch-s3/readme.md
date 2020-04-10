@@ -3,6 +3,7 @@
 Downloads data from S3 using a csv file of object names.
 
 Functionally, this wraps up the boto-s3 python library, and downloads files listed in a CSV.
+Authentication is handled by the boto library looking for environment variables.
 
 ## Usage (Docker)
 
